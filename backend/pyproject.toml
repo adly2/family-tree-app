@@ -1,0 +1,49 @@
+[project]
+name = "family-tree-backend"
+version = "0.1.0"
+description = "Family tree application backend"
+requires-python = ">=3.13"
+
+dependencies = [
+    # Pinned to the 5.2 LTS line. LTS gets ~3 years of security patches;
+    # feature releases like 6.x get roughly 8 months. For a project measured
+    # in months, LTS means upgrades happen when we choose, not on a timer.
+    "django>=5.2,<6.0",
+    # Postgres driver, v3. The [binary] extra pulls prebuilt wheels so Windows
+    # needs no C compiler or local libpq.
+    "psycopg[binary]>=3.2",
+    # Reads .env into settings WITH type casting: env.bool(), env.int(),
+    # env.db() parses a DATABASE_URL into Django's dict format.
+    "django-environ>=0.12",
+]
+
+# Dev-only tools. A deploy installs `dependencies` and skips this group
+# entirely, so the production image never ships a linter or test runner.
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "ruff>=0.8",
+]
+
+# This project is an application, not a library -- nothing here gets built into
+# a wheel and published. Without this, uv tries to build the project itself and
+# fails for lack of a build backend.
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# E/F  pycodestyle + pyflakes: the baseline errors
+# I    import sorting (replaces isort)
+# UP   rewrites outdated syntax for our Python version (replaces pyupgrade)
+# B    bugbear: likely-bug patterns, e.g. mutable default arguments
+# DJ   Django-specific rules, e.g. models missing __str__
+select = ["E", "F", "I", "UP", "B", "DJ"]
+
+[tool.pytest.ini_options]
+python_files = ["test_*.py", "*_test.py"]
+# DJANGO_SETTINGS_MODULE gets added in unit 3, once config/settings exists.

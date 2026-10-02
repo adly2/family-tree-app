@@ -210,15 +210,26 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 - Tests alongside the code from Phase 2 onward, not deferred to Phase 9.
 - TS types for the API are **generated from the OpenAPI schema**, never hand-written — that's what
   keeps frontend and backend from drifting.
+- **Test data is fictional. Always.** Fixtures, factories, and seed scripts use invented people, never
+  real relatives. This repository is public: no real names, dates, or places in committed test data, no
+  GEDCOM exports, no screenshots showing living people. Real family data lives only in the local
+  database, which is a Docker volume outside the repo.
+- `uv.lock` is committed, `.venv/` is not. The lockfile pins exact resolved versions so the project
+  builds identically elsewhere; the virtualenv is a local build artifact.
 
 ---
 
 ## 8. Current phase
 
-**Phase 0 — Foundations. Not started.**
+**Phase 0 — Foundations. In progress.**
 
-Next up: repo skeleton, `uv` venv, Django project, Postgres in Docker, `.env` config, custom User
-model, and `apps/core/ids.py` with a hand-written `uuid7()` plus its test.
+| Unit | What | State |
+|---|---|---|
+| 1 | Postgres via Docker Compose | done |
+| 2 | Dependencies via uv | done |
+| 3 | `startproject`, settings split, `.env` wiring | next |
+| 4 | `apps/core/ids.py` — `uuid7()` + test | user writes |
+| 5 | Custom User model | user writes the model, Claude wires it up |
 
 Done when `manage.py runserver` serves a working `/admin` login and `pytest` shows `uuid7()` producing
 increasing IDs.

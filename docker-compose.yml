@@ -1,0 +1,46 @@
+# Postgres for local development. Django itself runs natively on the host --
+# see the note at the bottom of this file for why.
+
+services:
+  db:
+    image: postgres:18
+    container_name: familytree_db
+
+    # These three are special: the postgres image reads them on FIRST startup
+    # to create the database, role, and password. Changing them later has no
+    # effect, because the data directory already exists (see volumes below).
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    # HOST:CONTAINER. Postgres always listens on 5432 inside the container;
+    # this publishes it to localhost:5432 so Django on the host can reach it.
+    ports:
+      - "5432:5432"
+
+    # Named volume, not a bind mount. This is what makes your data survive
+    # `docker compose down` and container rebuilds.
+    #
+    # Mount at /var/lib/postgresql -- NOT the /var/lib/postgresql/data that
+    # every pre-18 tutorial shows. Postgres 18 images keep the cluster in a
+    # version-specific subdirectory (/var/lib/postgresql/18/docker) so that
+    # `pg_upgrade --link` works without crossing a mount boundary. Mounting
+    # the old path makes the container refuse to start outright.
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+    # Postgres accepts TCP connections a second or two before it is actually
+    # ready to serve queries. Without this, `migrate` can fail with a
+    # confusing "connection refused" on a container that looks up.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+    restart: unless-stopped
+
+volumes:
+  pgdata:

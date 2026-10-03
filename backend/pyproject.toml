@@ -46,4 +46,4 @@ select = ["E", "F", "I", "UP", "B", "DJ"]
 
 [tool.pytest.ini_options]
 python_files = ["test_*.py", "*_test.py"]
-# DJANGO_SETTINGS_MODULE gets added in unit 3, once config/settings exists.
+DJANGO_SETTINGS_MODULE = "config.settings.local"

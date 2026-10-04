@@ -87,13 +87,17 @@ TEMPLATES = [
 
 
 # --- Database -------------------------------------------------------------
-# TODO(yours): build DATABASES from the POSTGRES_* values in .env.
-# Django wants {"default": {"ENGINE": ..., "NAME": ..., "USER": ...,
-# "PASSWORD": ..., "HOST": ..., "PORT": ...}}. The engine for psycopg v3 is
-# "django.db.backends.postgresql". django-environ's env() reads a key;
-# env.int() casts. See the comment in local.py for how to verify it.
-
-DATABASES: dict = {}
+# Credentials come from the repo-root .env, shared with docker-compose.yml.
+DATABASES: dict = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("POSTGRES_DB"),
+        "USER": env("POSTGRES_USER"),
+        "PASSWORD": env("POSTGRES_PASSWORD"),
+        "HOST": env("POSTGRES_HOST"),
+        "PORT": env.int("POSTGRES_PORT"),
+    }
+}
 
 
 # --- Authentication -------------------------------------------------------

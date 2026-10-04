@@ -227,9 +227,14 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 |---|---|---|
 | 1 | Postgres via Docker Compose | done |
 | 2 | Dependencies via uv | done |
-| 3 | `startproject`, settings split, `.env` wiring | next |
-| 4 | `apps/core/ids.py` — `uuid7()` + test | user writes |
+| 3 | `startproject`, settings split, `.env` wiring | done |
+| 4 | `apps/core/ids.py` — `uuid7()` + test | user writes — next |
 | 5 | Custom User model | user writes the model, Claude wires it up |
+
+> **Do not run `migrate` until unit 5 is done.** The custom User model must exist before the first
+> migration, because `admin.0001` points its log at whatever `AUTH_USER_MODEL` is at that moment.
+> The database was wiped on purpose after an early migrate; it is supposed to be empty right now.
+> If it isn't, run `docker compose down -v && docker compose up -d --wait db` before unit 5's migrate.
 
 Done when `manage.py runserver` serves a working `/admin` login and `pytest` shows `uuid7()` producing
 increasing IDs.
@@ -255,6 +260,9 @@ Verified on this machine: Python 3.13.7, Node 24.14.0, npm 11.9.0, uv 0.9.11, gi
   `encoding="utf-8"` crashes on any non-ASCII character. Always pass it explicitly — this will matter
   a lot in Phase 8, since GEDCOM files arrive as UTF-8, ANSEL, or Windows-1252 depending on which tool
   exported them.
+- **No `$` in `.env` values.** Compose reads the whole file and treats `$name` as a variable
+  reference, even in values it never uses. Generate secrets with `secrets.token_urlsafe()`, not
+  Django's `get_random_secret_key()`, whose alphabet includes `$`.
 - **Postgres 18 changed the Docker data path.** The volume mounts at `/var/lib/postgresql`, not the
   `/var/lib/postgresql/data` every older tutorial shows. See the comment in `docker-compose.yml`.
 - Python 3.13 has no `uuid.uuid7()` — that landed in 3.14. We generate v7 ourselves in

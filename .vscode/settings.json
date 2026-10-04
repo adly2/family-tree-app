@@ -1,0 +1,18 @@
+{
+  // Workspace settings override your user settings, but only inside this repo.
+  // Black stays your formatter everywhere else.
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      // Sort imports on save, matching ruff's "I" rule in pyproject.toml.
+      // Deliberately NOT "source.fixAll.ruff": that deletes unused imports
+      // on every save, including ones you just typed and haven't used yet.
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  // Point VS Code at the project venv. The Ruff extension then uses the ruff
+  // pinned in uv.lock instead of its own bundled copy, so the editor and
+  // `uv run ruff` can never disagree about formatting.
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe"
+}

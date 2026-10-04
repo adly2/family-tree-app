@@ -1,0 +1,4 @@
+{
+  // VS Code offers to install these when someone opens the repo.
+  "recommendations": ["charliermarsh.ruff", "ms-python.python"]
+}

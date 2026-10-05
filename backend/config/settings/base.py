@@ -129,5 +129,5 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Only applies to models that do not declare a primary key. Ours all use
-# UUIDv7 from apps.core.ids, so this is a fallback for third-party models.
+# UUIDv7 from the standard library, so this is a fallback for third-party models.
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

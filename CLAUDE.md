@@ -53,6 +53,11 @@ new or familiar.
 - Never optimize without a measurement first — an `EXPLAIN ANALYZE` or a timing, not a hunch.
 - Stop at each phase boundary rather than racing ahead into the next one.
 - When the user's reasoning is partly wrong, say which part and why. Don't smooth over it.
+- **Clean up after the lesson.** Learning scaffolding — a hand-written version of something a
+  library now provides, indirection whose reason has passed, tests that only exercise the standard
+  library or a dependency — gets flagged and removed once its lesson is learned. After any
+  replacement, ask what the old thing justified that no longer needs to exist, and raise it
+  unprompted.
 
 ---
 
@@ -65,7 +70,7 @@ These are settled. Don't re-litigate them without a new reason.
 | Backend | **Django + Django REST Framework** | A data-heavy relational domain needs a mature ORM, real migrations, and auth/permissions on day one. The built-in admin is the deciding factor: it makes genealogy data entry possible before any frontend exists, so Phase 1 can be tested against real family data. FastAPI was the alternative and is excellent for async I/O-bound services, but here it would mean hand-assembling the ORM, migrations, admin, and auth that this project needs immediately. |
 | Database | **PostgreSQL 18 (Docker)** | Recursive CTEs for traversal, `pg_trgm` for fuzzy name matching, real query plans. v18 also has `uuid_extract_timestamp()`. |
 | Frontend | **TypeScript + React + Vite** | Static types across the API boundary catch model/UI drift at compile time rather than in the browser. React has the mature visualization ecosystem (d3) that Phase 5 depends on. |
-| Primary keys | **UUIDv7 via Python 3.14's `uuid.uuid7()`** | Globally unique, so two trees never collide on connect; time-ordered, so B-tree inserts append at the right edge instead of scattering. Generated app-side so the PK exists before INSERT. Models import it from `apps.core.ids`, never from `uuid` directly. |
+| Primary keys | **UUIDv7 via Python 3.14's `uuid.uuid7()`** | Globally unique, so two trees never collide on connect; time-ordered, so B-tree inserts append at the right edge instead of scattering. Generated app-side so the PK exists before INSERT. From Phase 1, every model inherits the field from an abstract base model in `apps.core`. |
 | Tree model | **Private trees, connected rather than absorbed** | Separate families keep separate trees. See §6. |
 | Auth | **Session + CSRF** (JWT covered as a lesson, not used) | More secure for a same-site SPA and fewer moving parts than refresh-token rotation. |
 
@@ -88,7 +93,7 @@ Family Tree App/
 │   ├── manage.py
 │   ├── config/                 # settings/, urls.py, asgi.py, wsgi.py
 │   └── apps/
-│       ├── core/               # uuid7(), abstract base models, shared mixins
+│       ├── core/               # abstract base models (UUIDv7 primary key), shared mixins
 │       ├── accounts/           # custom User model
 │       ├── trees/              # Tree, TreeMembership, TreeLink, permissions
 │       ├── people/             # Person, Family, PersonAlias, Event, Place, Source
@@ -201,7 +206,9 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 
 ## 7. Conventions
 
-- **UUIDv7 primary keys everywhere**, from `apps/core/ids.py`. Never `AutoField`.
+- **UUIDv7 primary keys everywhere**: `UUIDField(primary_key=True, default=uuid7, editable=False)`,
+  with `uuid7` from the standard library and passed *uncalled*. From Phase 1 this field lives on an
+  abstract base model in `apps.core`. Never `AutoField`.
 - **Type hints on all Python.** They are a teaching tool here, not decoration.
 - `snake_case` in Python, `camelCase` in TypeScript. Serializers bridge the two.
 - **Raw SQL only for documented recursive CTEs**, always with a comment explaining what the query
@@ -229,7 +236,7 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 | 1 | Postgres via Docker Compose | done |
 | 2 | Dependencies via uv | done |
 | 3 | `startproject`, settings split, `.env` wiring | done |
-| 4 | `apps/core/ids.py` — `uuid7()` + test | done (hand-written in `da9d5a4`, then replaced by the 3.14 built-in) |
+| 4 | `uuid7()` + tests | done — hand-written in `da9d5a4`, replaced by the 3.14 built-in, then `ids.py` removed as unneeded indirection |
 | 5 | Custom User model | user writes the model, Claude wires it up — next |
 
 > **Do not run `migrate` until unit 5 is done.** The custom User model must exist before the first
@@ -237,8 +244,8 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 > The database was wiped on purpose after an early migrate; it is supposed to be empty right now.
 > If it isn't, run `docker compose down -v && docker compose up -d --wait db` before unit 5's migrate.
 
-Done when `manage.py runserver` serves a working `/admin` login and `pytest` shows `uuid7()` producing
-increasing IDs.
+Done when `manage.py runserver` serves a working `/admin` login and `pytest` confirms new users get
+distinct UUIDv7 primary keys.
 
 The full ten-phase roadmap lives in `README.md`. Update this section when a phase completes.
 

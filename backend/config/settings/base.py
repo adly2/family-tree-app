@@ -43,10 +43,16 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
 ]
 THIRD_PARTY_APPS: list[str] = []
-# Ours, added as each is created. accounts arrives in unit 5.
-LOCAL_APPS: list[str] = []
+# Ours, added as each is created.
+LOCAL_APPS = [
+    "apps.accounts",
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+
+# Swaps Django's built-in User for ours. Must be set before the first migrate:
+# admin.0001 binds its log table to whatever model this names at that moment.
+AUTH_USER_MODEL = "accounts.User"
 
 
 # --- Middleware -----------------------------------------------------------

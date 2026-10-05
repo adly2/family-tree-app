@@ -46,6 +46,7 @@ new or familiar.
 ### The rest
 
 - Explain *why* before *what*. No unexplained code, no "just trust me" blocks.
+- Alwasy review code for clarity and quality, including both code Claude writes and code the user writes.
 - Introduce one new concept at a time. Name it, say what problem it solves, then use it.
 - Comment the non-obvious lines only. No noise comments on `import os`.
 - Never add a dependency without stating what it replaces and what the tradeoff is.
@@ -228,8 +229,8 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 | 1 | Postgres via Docker Compose | done |
 | 2 | Dependencies via uv | done |
 | 3 | `startproject`, settings split, `.env` wiring | done |
-| 4 | `apps/core/ids.py` — `uuid7()` + test | user writes — next |
-| 5 | Custom User model | user writes the model, Claude wires it up |
+| 4 | `apps/core/ids.py` — `uuid7()` + test | done |
+| 5 | Custom User model | user writes the model, Claude wires it up — next |
 
 > **Do not run `migrate` until unit 5 is done.** The custom User model must exist before the first
 > migration, because `admin.0001` points its log at whatever `AUTH_USER_MODEL` is at that moment.
@@ -245,7 +246,8 @@ The full ten-phase roadmap lives in `README.md`. Update this section when a phas
 
 ## 9. Environment gotchas
 
-Verified on this machine: Python 3.13.7, Node 24.14.0, npm 11.9.0, uv 0.9.11, git, Docker 28.5.1.
+Verified on this machine: Python 3.13.7 system-wide, but the project venv runs uv's own managed
+**3.13.5** (`backend/.venv/pyvenv.cfg`); Node 24.14.0, npm 11.9.0, uv 0.9.11, git, Docker 28.5.1.
 
 - **Docker Desktop is not running by default** on this machine. `docker compose up` fails with a
   missing `dockerDesktopLinuxEngine` pipe until Docker Desktop is started.

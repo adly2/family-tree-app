@@ -233,7 +233,20 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 **Phase 0 — Foundations. Done.** Postgres in Docker, uv on Python 3.14, Django with split settings,
 custom `accounts.User` with a UUIDv7 primary key, migrated, admin login working, tests green.
 
-**Phase 1 — The data model. Not started.** Units get planned at the start of the phase.
+**Phase 1 — The data model. In progress.**
+
+| Unit | What | State |
+|---|---|---|
+| 1 | `apps.core`: abstract `UUIDModel` (id) and `BaseModel` (+ `updated_at`); `User` inherits `UUIDModel` | done |
+| 2 | `trees`: `Tree` + `TreeMembership` (owner / editor / viewer) | next |
+| 3 | Partial-date design ("circa 1890", "before 1900") | |
+| 4 | `people`: `Person` with `owner_tree` | |
+| 5 | `Family` + `FamilyPartner` + `FamilyChild` (union nodes) | |
+| 6 | `Event`, `Place`, `Source` | |
+| 7 | Admin with inlines; enter three generations | |
+
+No `created_at`: a UUIDv7 already encodes creation time, and `filter(id__gt=<v7 for date X>)` queries
+it. `updated_by` joins `BaseModel` in Phase 3, once requests carry a user.
 
 The full ten-phase roadmap lives in `README.md`. Update this section when a phase completes.
 

@@ -45,6 +45,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS: list[str] = []
 # Ours, added as each is created.
 LOCAL_APPS = [
+    "apps.core",
     "apps.accounts",
 ]
 

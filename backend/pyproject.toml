@@ -2,7 +2,7 @@
 name = "family-tree-backend"
 version = "0.1.0"
 description = "Family tree application backend"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 
 dependencies = [
     # Pinned to the 5.2 LTS line. LTS gets ~3 years of security patches;
@@ -34,7 +34,7 @@ package = false
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 # E/F  pycodestyle + pyflakes: the baseline errors

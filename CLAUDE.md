@@ -65,7 +65,7 @@ These are settled. Don't re-litigate them without a new reason.
 | Backend | **Django + Django REST Framework** | A data-heavy relational domain needs a mature ORM, real migrations, and auth/permissions on day one. The built-in admin is the deciding factor: it makes genealogy data entry possible before any frontend exists, so Phase 1 can be tested against real family data. FastAPI was the alternative and is excellent for async I/O-bound services, but here it would mean hand-assembling the ORM, migrations, admin, and auth that this project needs immediately. |
 | Database | **PostgreSQL 18 (Docker)** | Recursive CTEs for traversal, `pg_trgm` for fuzzy name matching, real query plans. v18 also has `uuid_extract_timestamp()`. |
 | Frontend | **TypeScript + React + Vite** | Static types across the API boundary catch model/UI drift at compile time rather than in the browser. React has the mature visualization ecosystem (d3) that Phase 5 depends on. |
-| Primary keys | **UUIDv7, generated in Python** | Globally unique, so two trees never collide on connect; time-ordered, so B-tree inserts append at the right edge instead of scattering. |
+| Primary keys | **UUIDv7 via Python 3.14's `uuid.uuid7()`** | Globally unique, so two trees never collide on connect; time-ordered, so B-tree inserts append at the right edge instead of scattering. Generated app-side so the PK exists before INSERT. Models import it from `apps.core.ids`, never from `uuid` directly. |
 | Tree model | **Private trees, connected rather than absorbed** | Separate families keep separate trees. See §6. |
 | Auth | **Session + CSRF** (JWT covered as a lesson, not used) | More secure for a same-site SPA and fewer moving parts than refresh-token rotation. |
 
@@ -229,7 +229,7 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 | 1 | Postgres via Docker Compose | done |
 | 2 | Dependencies via uv | done |
 | 3 | `startproject`, settings split, `.env` wiring | done |
-| 4 | `apps/core/ids.py` — `uuid7()` + test | done |
+| 4 | `apps/core/ids.py` — `uuid7()` + test | done (hand-written in `da9d5a4`, then replaced by the 3.14 built-in) |
 | 5 | Custom User model | user writes the model, Claude wires it up — next |
 
 > **Do not run `migrate` until unit 5 is done.** The custom User model must exist before the first
@@ -246,8 +246,9 @@ The full ten-phase roadmap lives in `README.md`. Update this section when a phas
 
 ## 9. Environment gotchas
 
-Verified on this machine: Python 3.13.7 system-wide, but the project venv runs uv's own managed
-**3.13.5** (`backend/.venv/pyvenv.cfg`); Node 24.14.0, npm 11.9.0, uv 0.9.11, git, Docker 28.5.1.
+Verified on this machine: the project runs uv-managed **Python 3.14.8**, pinned by
+`backend/.python-version`. A system-wide Python 3.13.7 also exists and is unrelated to the project.
+Node 24.14.0, npm 11.9.0, uv 0.12.23, git, Docker 28.5.1.
 
 - **Docker Desktop is not running by default** on this machine. `docker compose up` fails with a
   missing `dockerDesktopLinuxEngine` pipe until Docker Desktop is started.
@@ -267,6 +268,12 @@ Verified on this machine: Python 3.13.7 system-wide, but the project venv runs u
   Django's `get_random_secret_key()`, whose alphabet includes `$`.
 - **Postgres 18 changed the Docker data path.** The volume mounts at `/var/lib/postgresql`, not the
   `/var/lib/postgresql/data` every older tutorial shows. See the comment in `docker-compose.yml`.
-- Python 3.13 has no `uuid.uuid7()` — that landed in 3.14. We generate v7 ourselves in
-  `apps/core/ids.py` rather than add a dependency, and app-side generation is what Django wants anyway
-  so the PK exists before INSERT.
+- **VS Code locks the venv.** The Ruff and Black extensions run servers from `backend/.venv`, and
+  Windows won't delete files a running process is using, so a `uv sync` that rebuilds the venv (e.g.
+  after a Python version change) fails with `Access is denied`. Killing the servers doesn't help —
+  VS Code relaunches them instantly. Temporarily set `"ruff.importStrategy": "useBundled"` and point
+  `"black-formatter.interpreter"` at the system Python in `.vscode/settings.json`, rebuild, then revert.
+- **uv was installed with pip** into the system Python, so `uv self update` refuses. Update with the
+  system interpreter by full path: `...\Python313\python.exe -m pip install --upgrade uv`. Plain
+  `python` may resolve to the project venv, which has no pip. An outdated uv also only knows the Python
+  builds that existed at its release — update uv before installing a new Python.

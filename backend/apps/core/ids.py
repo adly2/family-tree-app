@@ -1,22 +1,14 @@
-import secrets
-import time
-import uuid
+"""
+Primary key generation.
 
+Every model takes its default primary key from here instead of importing from
+the uuid module directly, so the implementation can change in exactly one file.
 
-def uuid7(timestamp_ms: int | None = None) -> uuid.UUID:
-    """Return a new UUIDv7. Uses the current time unless timestamp_ms is given."""
-    if timestamp_ms is None:  # Use the current time
-        timestamp_ms = int(time.time_ns() // 1000000)
-    elif timestamp_ms < 0 or timestamp_ms >= (1 << 48):
-        raise ValueError("Invalid timestamp")
-    rand_a = secrets.randbits(12)
-    rand_b = secrets.randbits(62)
-    var = 0b10
-    ver = 0b0111
-    uuid_int = timestamp_ms << 80 | ver << 76 | rand_a << 64 | var << 62 | rand_b
-    return uuid.UUID(int=uuid_int)
+Python 3.14's uuid.uuid7() replaced a hand-written version -- see commit
+da9d5a4 for the bit layout. The built-in also guarantees ordering within a
+single millisecond. For a v7 UUID, `.time` returns its millisecond timestamp.
+"""
 
+from uuid import uuid7
 
-def uuid7_timestamp_ms(value: uuid.UUID) -> int:
-    """Return the millisecond timestamp stored in the top 48 bits of a UUIDv7."""
-    return int(value) >> 80
+__all__ = ["uuid7"]

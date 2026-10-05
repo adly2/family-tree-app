@@ -100,4 +100,4 @@ npm install
 npm run dev                       # http://localhost:5173
 ```
 
-Requirements: Python 3.13+, Node 20+, uv, Docker Desktop.
+Requirements: Python 3.14+, Node 20+, uv, Docker Desktop.

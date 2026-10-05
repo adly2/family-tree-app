@@ -46,7 +46,8 @@ new or familiar.
 ### The rest
 
 - Explain *why* before *what*. No unexplained code, no "just trust me" blocks.
-- Alwasy review code for clarity and quality, including both code Claude writes and code the user writes.
+- Always review code for clarity and quality, including both code Claude writes and code the user writes.
+- Be efficient in how you speak, with quick questions giving quick answers, and complicated answers being longer but efficient.
 - Introduce one new concept at a time. Name it, say what problem it solves, then use it.
 - Comment the non-obvious lines only. No noise comments on `import os`.
 - Never add a dependency without stating what it replaces and what the tradeoff is.
@@ -229,23 +230,10 @@ on `owner_tree_id IN (...)`, which stays index-friendly. Built in Phase 3, measu
 
 ## 8. Current phase
 
-**Phase 0 — Foundations. In progress.**
+**Phase 0 — Foundations. Done.** Postgres in Docker, uv on Python 3.14, Django with split settings,
+custom `accounts.User` with a UUIDv7 primary key, migrated, admin login working, tests green.
 
-| Unit | What | State |
-|---|---|---|
-| 1 | Postgres via Docker Compose | done |
-| 2 | Dependencies via uv | done |
-| 3 | `startproject`, settings split, `.env` wiring | done |
-| 4 | `uuid7()` + tests | done — hand-written in `da9d5a4`, replaced by the 3.14 built-in, then `ids.py` removed as unneeded indirection |
-| 5 | Custom User model | user writes the model, Claude wires it up — next |
-
-> **Do not run `migrate` until unit 5 is done.** The custom User model must exist before the first
-> migration, because `admin.0001` points its log at whatever `AUTH_USER_MODEL` is at that moment.
-> The database was wiped on purpose after an early migrate; it is supposed to be empty right now.
-> If it isn't, run `docker compose down -v && docker compose up -d --wait db` before unit 5's migrate.
-
-Done when `manage.py runserver` serves a working `/admin` login and `pytest` confirms new users get
-distinct UUIDv7 primary keys.
+**Phase 1 — The data model. Not started.** Units get planned at the start of the phase.
 
 The full ten-phase roadmap lives in `README.md`. Update this section when a phase completes.
 
